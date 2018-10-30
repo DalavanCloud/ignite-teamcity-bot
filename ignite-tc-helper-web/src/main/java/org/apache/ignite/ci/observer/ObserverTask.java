@@ -32,10 +32,9 @@ import org.apache.ignite.ci.di.MonitoredTask;
 import org.apache.ignite.ci.jira.IJiraIntegration;
 import org.apache.ignite.ci.user.ICredentialsProv;
 import org.apache.ignite.configuration.CollectionConfiguration;
+import org.apache.ignite.ci.web.model.Visa;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.ignite.ci.jira.IJiraIntegration.JIRA_COMMENTED;
 
 /**
  * Checks observed builds for finished status and comments JIRA ticket.
@@ -64,7 +63,7 @@ public class ObserverTask extends TimerTask {
 
         cfg.setBackups(1);
 
-        return ignite.queue("buildsQueue", 0, cfg);
+        return ignite.queue("builds", 0, cfg);
     }
 
     /** */
@@ -107,6 +106,16 @@ public class ObserverTask extends TimerTask {
 
             IAnalyticsEnabledTeamcity teamcity = tcHelper.server(info.srvId, tcHelper.getServerAuthorizerCreds());
 
+            if (info.isFinishedWithFailures(teamcity)) {
+                builds.remove(info);
+
+                logger.error("JIRA will not be commented." +
+                    " [ticket: " + info.ticket + ", branch:" + info.branchForTc + "] : " +
+                    "one or more re-runned blocker's builds finished with UNKNOWN status.");
+
+                continue;
+            }
+
             if (!info.isFinished(teamcity)) {
                 notFinishedBuilds += info.buildsCount() - info.finishedBuildsCount();
 
@@ -115,10 +124,12 @@ public class ObserverTask extends TimerTask {
 
             ICredentialsProv creds = tcHelper.getServerAuthorizerCreds();
 
-            String jiraRes = jiraIntegration.notifyJira(info.srvId, creds, info.buildTypeId,
-                info.branchName, info.ticket);
+            Visa visa = jiraIntegration.notifyJira(info.srvId, creds, info.buildTypeId,
+                info.branchForTc, info.ticket);
 
-            if (JIRA_COMMENTED.equals(jiraRes)) {
+            tcHelper.getVisasHistoryStorage().updateVisaRequestResult(info.date, visa);
+
+            if (visa.isSuccess()) {
                 ticketsNotified.add(info.ticket);
 
                 builds.remove(info);
