@@ -17,21 +17,16 @@
 
 package org.apache.ignite.ci.web.model.hist;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import org.apache.ignite.ci.ITeamcity;
 import org.apache.ignite.ci.tcbot.trends.MasterTrendsService;
 import org.apache.ignite.ci.teamcity.ignited.BuildRefCompacted;
 import org.apache.ignite.ci.teamcity.ignited.IStringCompactor;
 import org.apache.ignite.ci.teamcity.ignited.ITeamcityIgnited;
 import org.apache.ignite.ci.teamcity.ignited.ITeamcityIgnitedProvider;
-import org.apache.ignite.ci.teamcity.restcached.ITcServerProvider;
 import org.apache.ignite.ci.user.ICredentialsProv;
 import org.apache.ignite.ci.web.model.current.BuildStatisticsSummary;
-import org.apache.ignite.ci.web.rest.parms.FullQueryParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

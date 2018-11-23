@@ -66,11 +66,9 @@ import org.apache.ignite.ci.tcmodel.result.tests.TestOccurrences;
 import org.apache.ignite.ci.tcmodel.result.tests.TestOccurrencesFull;
 import org.apache.ignite.ci.tcmodel.result.tests.TestRef;
 import org.apache.ignite.ci.tcmodel.user.User;
-import org.apache.ignite.ci.util.CacheUpdateUtil;
 import org.apache.ignite.ci.util.CollectionUtil;
 import org.apache.ignite.ci.util.ObjectInterner;
 import org.apache.ignite.ci.web.model.hist.VisasHistoryStorage;
-import org.apache.ignite.ci.web.rest.parms.FullQueryParams;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.ignite.ci.tcbot.chain.BuildChainProcessor.normalizeBranch;
