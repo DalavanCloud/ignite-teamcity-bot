@@ -106,6 +106,7 @@ public class MonitoredTaskInterceptor implements MethodInterceptor {
 
         monitoredInvoke.saveStart(startTs);
 
+
         Object res = null;
         try {
             res = invocation.proceed();

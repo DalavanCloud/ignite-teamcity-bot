@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import java.util.stream.Stream;
+import org.apache.ignite.ci.ITeamcity;
 import org.apache.ignite.ci.di.AutoProfiling;
 import org.apache.ignite.ci.di.MonitoredTask;
 import org.apache.ignite.ci.di.scheduler.IScheduler;
@@ -242,9 +243,24 @@ public class ProactiveFatBuildSync {
      * @param srvName Server name.
      * @param conn Connection.
      */
-    public void invokeLaterFindMissingByBuildRef(String srvName, ITeamcityConn conn) {
+    public void ensureActualizationRequested(String srvName, ITeamcityConn conn) {
         scheduler.sheduleNamed(taskName("findMissingBuildsFromBuildRef", srvName),
                 () -> findMissingBuildsFromBuildRef(srvName, conn), 360, TimeUnit.MINUTES);
+
+        scheduler.sheduleNamed(taskName("migrateBuildsToV6", srvName),
+            () -> migrateBuildsToV6(srvName, conn), 8, TimeUnit.HOURS);
+    }
+
+    @MonitoredTask(name = "Migrate Builds to V6", nameExtArgsIndexes = {0})
+    public String migrateBuildsToV6(String srvName, ITeamcityConn conn) {
+        int srvId = ITeamcityIgnited.serverIdToInt(srvName);
+
+        AtomicInteger cnt = new AtomicInteger();
+        fatBuildDao.forEachBuildsV5(srvId, (id, fatBuild) -> {
+            cnt.incrementAndGet();
+        });
+
+        return cnt.get() + " builds found having version < 6";
     }
 
     /**

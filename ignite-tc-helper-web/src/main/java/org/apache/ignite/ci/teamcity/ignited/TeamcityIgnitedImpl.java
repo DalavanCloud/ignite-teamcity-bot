@@ -382,11 +382,14 @@ public class TeamcityIgnitedImpl implements ITeamcityIgnited {
             return Collections.singletonList(branchName);
     }
 
+    /**
+     * Enables scheduleing for build refs/builds/history sync
+     */
     public void ensureActualizeRequested() {
         scheduler.sheduleNamed(taskName("actualizeRecentBuildRefs"), this::actualizeRecentBuildRefs, 2, TimeUnit.MINUTES);
 
         // schedule find missing later
-        buildSync.invokeLaterFindMissingByBuildRef(srvNme, conn);
+        buildSync.ensureActualizationRequested(srvNme, conn);
 
         runHistSync.invokeLaterFindMissingHistory(srvNme);
     }
