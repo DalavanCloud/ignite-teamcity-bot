@@ -23,8 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import javax.cache.Cache;
 import javax.inject.Inject;
@@ -32,8 +33,6 @@ import javax.inject.Provider;
 import javax.validation.constraints.NotNull;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
-import org.apache.ignite.cache.query.QueryCursor;
-import org.apache.ignite.cache.query.SqlQuery;
 import org.apache.ignite.ci.db.TcHelperDb;
 import org.apache.ignite.ci.di.AutoProfiling;
 import org.apache.ignite.ci.tcmodel.changes.ChangesList;
@@ -123,12 +122,6 @@ public class FatBuildDao {
         buildsCache.put(buildIdToCacheKey(srvIdMaskHigh, buildId), newBuild);
     }
 
-
-    @AutoProfiling
-    public boolean removeFatBuild(int srvIdMaskHigh, int buildId) {
-       return  buildsCache.remove(buildIdToCacheKey(srvIdMaskHigh, buildId));
-    }
-
     public static int[] extractChangeIds(@NotNull ChangesList changesList) {
         return changesList.changes().stream().mapToInt(
                         ch -> {
@@ -188,20 +181,9 @@ public class FatBuildDao {
         return buildsCache.containsKey(buildIdToCacheKey(srvIdMaskHigh, buildId));
     }
 
-    public void forEachBuildsV5(int srvId, BiConsumer<Long, FatBuildCompacted> processor) {
-        try (QueryCursor<Cache.Entry<Long, FatBuildCompacted>> qryCursor  = buildsCache.query(
-            new SqlQuery<Long, FatBuildCompacted>(FatBuildCompacted.class, "_ver < ?")
-                .setArgs(FatBuildCompacted.LATEST_VERSION))) {
-
-            for (Cache.Entry<Long, FatBuildCompacted> next : qryCursor) {
-                Long key = next.getKey();
-
-                if (!isKeyForServer(key, srvId))
-                    continue;
-
-                processor.accept(next.getKey(), next.getValue());
-            }
-        }
-
+    public Stream<Cache.Entry<Long, FatBuildCompacted>> outdatedVersionEntries(int srvId) {
+        return StreamSupport.stream(buildsCache.spliterator(), false)
+            .filter(entry -> entry.getValue().isOutdatedEntityVersion())
+            .filter(entry -> isKeyForServer(entry.getKey(), srvId));
     }
 }
