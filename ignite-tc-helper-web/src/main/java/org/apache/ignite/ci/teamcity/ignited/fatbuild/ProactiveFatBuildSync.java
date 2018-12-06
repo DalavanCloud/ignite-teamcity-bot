@@ -245,8 +245,10 @@ public class ProactiveFatBuildSync {
         scheduler.sheduleNamed(taskName("findMissingBuildsFromBuildRef", srvName),
             () -> findMissingBuildsFromBuildRef(srvName, conn), 360, TimeUnit.MINUTES);
 
+        /*
         scheduler.sheduleNamed(taskName("migrateBuildsToV6", srvName),
             () -> migrateBuildsToV6(srvName, conn), 8, TimeUnit.HOURS);
+             */
     }
 
     /**
