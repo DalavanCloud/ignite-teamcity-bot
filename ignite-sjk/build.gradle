@@ -1,0 +1,18 @@
+
+
+apply plugin: 'application'
+mainClassName='org.gridkit.jvmtool.SJK'
+applicationDefaultJvmArgs = ["stcap"]
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    compile 'org.gridkit.jvmtool:sjk:0.11'
+}
+
