@@ -167,6 +167,11 @@ public class RunHistSync {
     @NotNull protected String saveInvocationsMap(
         Map<RunHistKey, List<Invocation>> buildsSaveThisRun,
         Map<RunHistKey, List<Invocation>> saveThisRun) {
+
+        if (saveThisRun.size() > 50000) {
+            histDao.disableWal();
+        }
+
         Set<Integer> confirmedNewBuild = new HashSet<>();
         Set<Integer> confirmedDuplicate = new HashSet<>();
 
